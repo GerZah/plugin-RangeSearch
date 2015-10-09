@@ -1,0 +1,97 @@
+# Translation for the Range Search plugin for Omeka.
+# Copyright (C) 2015 Gero Zahn
+# This file is distributed under the same license as the Omeka package.
+# Gero Zahn <gero.zahn@upb.de>, 2015.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: RangeSearch\n"
+"Report-Msgid-Bugs-To: http://github.com/omeka/plugin-RangeSearch/issues\n"
+"POT-Creation-Date: 2012-01-09 21:49-0500\n"
+"PO-Revision-Date: 2015-10-09 11:03+0200\n"
+"Last-Translator: Gero Zahn <gero.zahn@upb.de>\n"
+"Language-Team: de_DE <LL@li.org>\n"
+"Language: de_DE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.5\n"
+
+#: config_form.php:3
+msgid "Units"
+msgstr "Einheiten"
+
+#: config_form.php:8
+msgid ""
+"Please enter all units that you would like to support, one per line."
+"<br><em>Please note:</em> Units name may not be longer than 20 characters."
+msgstr ""
+"Bitte geben Sie alle Einheiten ein, die Sie unterstützen wollen, eine pro "
+"Zeile.<br><em>Bitte beachten:</em> Einheiten dürfen maximal 20 Zeichen lang "
+"sein."
+
+#: config_form.php:19
+msgid "Scan All Text Fields"
+msgstr "Alle Textfelder durchsuchen"
+
+#: config_form.php:24
+msgid ""
+"Check this if you want numbers / ranges processing to be carried out within "
+"all of an item's text fields."
+msgstr ""
+"Wählen Sie dies aus, wenn Sie Zahlen oder Bereiche in allen Textfeldern "
+"eines Objektes suchen wollen."
+
+#: config_form.php:31
+msgid "Limit Scan to Fields"
+msgstr "Suche auf Felder beschränken"
+
+#: config_form.php:36
+msgid ""
+"Please select the elements i.e. fields that the scan for names / ranges "
+"should be limited to.<br><em>Please note:</em> To select multiple entries, "
+"try holding the Ctrl key (Windows) or the Cmd key (Mac) while clicking."
+msgstr ""
+"Bitte wählen Sie die Elemente bzw. Felder, auf die die Suche nach Nummern "
+"beschränkt sein soll.<br><em>Bitte beachten Sie:</em> Um mehrere Einträge "
+"auszuwählen, halten Sie bitte während des Klickens die Strg-Taste (Windows) "
+"bzw. die Command-Taste (Mac) gedrückt."
+
+#: config_form.php:45
+msgid "Scan Inside Relationship Comments"
+msgstr "Innerhalb von Objekt-Beziehungs-Kommentaren suchen"
+
+#: config_form.php:50
+msgid ""
+"The Item Relationships add-on is installed, and it has been patched to "
+"feature relationship comments. Check this if you want Range Search to scan "
+"inside relationship comments."
+msgstr ""
+"Das Objekt-Beziehungen (Item Relationships) Add-on ist installiert, und es "
+"ist gepatcht, um Beziehungs-Kommentare zu unterstützen. Wählen Sie dies aus, "
+"wenn die Suche innerhalb der Beziehungskommentare erfolgen soll."
+
+#: views/shared/common/range-search-advanced-search.php:3
+msgid "Range Search"
+msgstr "Bereichs-Suche"
+
+#: views/shared/common/range-search-advanced-search.php:8
+msgid ""
+"You may enter a number in the forms XXXX, XXXX-YY, or XXXX-YY-ZZ, or a "
+"number range consisting of two numbers, separated by a hypen (\"-\"). You "
+"may also select one of the units that you defined to limit the search to. "
+"Range Search will find items that contain numbers and number ranges matching "
+"your search. For example: \"500\" will find an item mentioning the number "
+"range \"450-550\"."
+msgstr ""
+"Sie können eine Zahl in der Form XXXX, XXXX-YY oder XXXX-YY-ZZ eingeben, "
+"oder einen Zahlenbereich, bestehend aus zwei Zahlen, getrennt durch einen "
+"Bindestrich(\"-\"). Darüber hinaus können Sie eine von Ihnen gewählte "
+"Einheit auswählen, um die Suche zu begrenzen. Die Bereichs-Suche findet "
+"Objekte, die Zahlen oder Zahlenbereiche enthalten, die zur Suche passen. "
+"Beispielweise wird die Suche nach \"500\" ein Objekt finden, das den "
+"Zahlenbereich \"450-550\" enthält."
+
+#: views/shared/common/range-search-advanced-search.php:16
+msgid "All"
+msgstr "Alle"

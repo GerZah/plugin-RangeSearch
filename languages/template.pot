@@ -1,0 +1,78 @@
+# Translation for the Range Search plugin for Omeka.
+# Copyright (C) 2015 Gero Zahn
+# This file is distributed under the same license as the Omeka package.
+# Gero Zahn <gero.zahn@upb.de>, 2015.
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: RangeSearch\n"
+"Report-Msgid-Bugs-To: http://github.com/omeka/plugin-RangeSearch/issues\n"
+"POT-Creation-Date: 2012-01-09 21:49-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Gero Zahn<gero.zahn@upb.de>\n"
+"Language-Team: en_US <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: config_form.php:3
+msgid "Units"
+msgstr ""
+
+#: config_form.php:8
+msgid ""
+"Please enter all units that you would like to support, one per line."
+"<br><em>Please note:</em> Units name may not be longer than 20 characters."
+msgstr ""
+
+#: config_form.php:19
+msgid "Scan All Text Fields"
+msgstr ""
+
+#: config_form.php:24
+msgid ""
+"Check this if you want numbers / ranges processing to be carried out within "
+"all of an item's text fields."
+msgstr ""
+
+#: config_form.php:31
+msgid "Limit Scan to Fields"
+msgstr ""
+
+#: config_form.php:36
+msgid ""
+"Please select the elements i.e. fields that the scan for names / ranges "
+"should be limited to.<br><em>Please note:</em> To select multiple entries, "
+"try holding the Ctrl key (Windows) or the Cmd key (Mac) while clicking."
+msgstr ""
+
+#: config_form.php:45
+msgid "Scan Inside Relationship Comments"
+msgstr ""
+
+#: config_form.php:50
+msgid ""
+"The Item Relationships add-on is installed, and it has been patched to "
+"feature relationship comments. Check this if you want Range Search to scan "
+"inside relationship comments."
+msgstr ""
+
+#: views/shared/common/range-search-advanced-search.php:3
+msgid "Range Search"
+msgstr ""
+
+#: views/shared/common/range-search-advanced-search.php:8
+msgid ""
+"You may enter a number in the forms XXXX, XXXX-YY, or XXXX-YY-ZZ, or a "
+"number range consisting of two numbers, separated by a hypen (\"-\"). You "
+"may also select one of the units that you defined to limit the search to. "
+"Range Search will find items that contain numbers and number ranges matching "
+"your search. For example: \"500\" will find an item mentioning the number "
+"range \"450-550\"."
+msgstr ""
+
+#: views/shared/common/range-search-advanced-search.php:16
+msgid "All"
+msgstr ""
