@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: RangeSearch\n"
 "Report-Msgid-Bugs-To: http://github.com/omeka/plugin-RangeSearch/issues\n"
 "POT-Creation-Date: 2012-01-09 21:49-0500\n"
-"PO-Revision-Date: 2015-10-09 11:03+0200\n"
+"PO-Revision-Date: 2015-10-27 15:50+0100\n"
 "Last-Translator: Gero Zahn <gero.zahn@upb.de>\n"
 "Language-Team: de_DE <LL@li.org>\n"
 "Language: de_DE\n"
@@ -16,6 +16,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 1.8.5\n"
+
+#: RangeSearchPlugin.php:416
+msgid "Range Search Debug Output"
+msgstr "Bereichs-Suche Debug-Ausgabe"
 
 #: config_form.php:3
 msgid "Units"
@@ -71,6 +75,37 @@ msgstr ""
 "ist gepatcht, um Beziehungs-Kommentare zu unterstützen. Wählen Sie dies aus, "
 "wenn die Suche innerhalb der Beziehungskommentare erfolgen soll."
 
+#: config_form.php:87
+msgid "Trigger Re-indexing of Existing Content"
+msgstr "Re-Indexierung von bestehendem Inhalt auslösen"
+
+#: config_form.php:92
+msgid ""
+"<strong>Please note:</strong> Checking this box will re-generate the index "
+"<em>now</em> and exactly <em>once</em>. This action will be carried out as "
+"soon as you click on \"Save Changes\"."
+msgstr ""
+"<strong>Bitte beachten:</strong> Wenn Sie diese Option auswählen, wird der "
+"Index <em>jetzt</em> und genau <em>einmal</em>neu generiert. Diese Aktion "
+"wird durchgeführt, sobald Sie auf „Änderungen speichern“ klicken."
+
+#: config_form.php:99
+msgid ""
+"<em>Explanation:</em> Range Search relies on a search index that is being "
+"created during content maintenance in the background. However, existing "
+"content will not be re-indexed automatically. So if you have existing "
+"content or modify your settings, you should re-generate the search index."
+msgstr ""
+"<em>Erläuterung:</em> Die Bereichs-Suche stützt sich auf einen Suchindex, "
+"der während der Inhaltspflege im Hintergrund erstellt wird. Jedoch werden "
+"vorhandene Inhalte nicht automatisch erneut indexiert. Sofern Ihre Datenbank "
+"also über bestehende Inhalte verfügt, oder wenn Sie Ihre Einstellungen "
+"ändern, sollten Sie den Suchindex neu generieren."
+
+#: config_form.php:108
+msgid "Debug Output"
+msgstr "Debug-Ausgabe"
+
 #: views/shared/common/range-search-advanced-search.php:3
 msgid "Range Search"
 msgstr "Bereichs-Suche"
@@ -91,7 +126,3 @@ msgstr ""
 "Objekte, die Zahlen oder Zahlenbereiche enthalten, die zur Suche passen. "
 "Beispielweise wird die Suche nach \"500\" ein Objekt finden, das den "
 "Zahlenbereich \"450-550\" enthält."
-
-#: views/shared/common/range-search-advanced-search.php:16
-msgid "All"
-msgstr "Alle"

@@ -66,16 +66,50 @@
 	
 		showHideShownHiddenSearchAll();
 	
-		$("#range_search_search_all_fields").change( function() { showHideShownHiddenSearchAll(); } );
+		$("#range_search_units").change( function() { activateReindexCheckbox(); } );
+		$("#range_search_search_all_fields").change( function() { showHideShownHiddenSearchAll(); activateReindexCheckbox(); } );
+		$("#range_search_limit_fields").change( function() { activateReindexCheckbox(); } );
+		$("#range_search_search_rel_comments").change( function() { activateReindexCheckbox(); } );
 	
 		function showHideShownHiddenSearchAll() {
 			var searchAllPreset = $("#range_search_search_all_fields").is(":checked");
 			// alert("foo: "+searchAllPreset);
-			if (searchAllPreset) { $("#shownHiddenSeachAll").hide(); } else { $("#shownHiddenSeachAll").show(); }
+			if (searchAllPreset) { $("#shownHiddenSeachAll").slideUp(); } else { $("#shownHiddenSeachAll").slideDown(); }
 		}
+	
+		function activateReindexCheckbox() { $("#range_search_trigger_reindex").prop('checked', true); }
 	
 	} );
 // -->
 </script>
+
+    <div class="two columns alpha">
+        <?php echo get_view()->formLabel('range_search_trigger_reindex', __('Trigger Re-indexing of Existing Content')); ?>
+    </div>
+    <div class="inputs five columns omega">
+        <p class="explanation">
+            <?php
+							echo __('<strong>Please note:</strong> Checking this box will re-generate the index <em>now</em> and '.
+											'exactly <em>once</em>. This action will be carried out as soon as you click on "Save Changes".');
+            ?>
+        </p>
+        <?php echo get_view()->formCheckbox('range_search_trigger_reindex', null, array('checked' => false)); ?>
+        <p class="explanation">
+            <?php
+							echo __('<em>Explanation:</em> Range Search relies on a search index that is being created during content'.
+											' maintenance in the background. However, existing content will not be re-indexed automatically. '.
+											'So if you have existing content or modify your settings, you should re-generate the search index.');
+            ?>
+        </p>
+    </div>
+
+  <?php if (isset($debugOutput)) { ?>
+    <div class="two columns alpha">
+        <?php echo get_view()->formLabel('range_search_debug_output', __('Debug Output')); ?>
+    </div>
+    <div class="inputs five columns omega">
+        <?php echo get_view()->formCheckbox('range_search_debug_output', null, array('checked' => $debugOutput)); ?>
+    </div>
+  <?php } ?>
 
 </div>

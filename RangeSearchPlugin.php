@@ -20,6 +20,8 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 		'after_save_item', # preprocess saved item for ranges
 		'after_delete_item', # delete deleted item's preprocessed ranges
 		'admin_items_search', # add a time search field to the advanced search panel in admin
+		'public_items_search', # add a time search field to the advanced search panel in public
+		'admin_items_show_sidebar', # Debug output of stored numbers/ranges in item's sidebar (if activated)
 		'items_browse_sql', # filter for a range after search page submission.
 	);
 
@@ -28,6 +30,7 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 		'range_search_search_all_fields' => 1,
 		'range_search_limit_fields' => "[]",
 		'range_search_search_rel_comments' => 1,
+		'range_search_debug_output' => 0,
 	);
 
 	/**
@@ -53,7 +56,7 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 				`item_id` int(10) unsigned NOT NULL REFERENCES `$db->Item`,
 				`fromnum` varchar(20) NOT NULL,
 				`tonum` varchar(20) NOT NULL,
-				`unit` varchar(20) NOT NULL,
+				`unit` varchar(200) NOT NULL,
 				PRIMARY KEY (`id`),
 				INDEX (unit)
 		) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
@@ -84,7 +87,15 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 			$sql="
 						ALTER TABLE `$db->RangeSearchValues`
 							MODIFY fromnum varchar(20),
-							MODIFY tonum varchar(20)
+							MODIFY unit varchar(20)
+						";
+      $db->query($sql);
+			SELF::_batchProcessExistingItems();
+		}
+		if ($oldVersion <= '0.3') {
+			$sql="
+						ALTER TABLE `$db->RangeSearchValues`
+							MODIFY unit varchar(200)
 						";
       $db->query($sql);
 			SELF::_batchProcessExistingItems();
@@ -95,7 +106,7 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 	 * Display the plugin configuration form.
 	 */
 	public static function hookConfigForm() {
-		$rangeSearchUnits = implode("\n", SELF::_decodeUnitsFromOption(get_option('range_search_units'), false) );
+		$rangeSearchUnits = SELF::_prepareUnitsFromJsonForEdit();
 		# echo "<pre>$rangeSearchUnits</pre>"; die();
 
 		$searchAllFields = (int)(boolean) get_option('range_search_search_all_fields');
@@ -113,7 +124,11 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 		$withRelComments=SELF::_withRelComments();
 		$searchRelComments = (int)(boolean) get_option('range_search_search_rel_comments');
 
+		$debugOutput = (int)(boolean) get_option('range_search_debug_output'); # comment line to remove debug output panel
+
 		require dirname(__FILE__) . '/config_form.php';
+
+		# SELF::_constructRegEx(); // +#+#+# DEBUG
 	}
 
 	/**
@@ -121,54 +136,79 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 	 */
 	public static function hookConfig() {
 		// Unit configuration
-		$oldRangeSearchUnits = get_option('range_search_units');
-		$newRangeSearchUnits = SELF::_encodeUnitsFromTextArea($_POST['range_search_units']);
-		set_option('range_search_units', $newRangeSearchUnits );
+		$rangeSearchUnits = SELF::_encodeUnitsFromTextArea($_POST['range_search_units']);
+		set_option('range_search_units', $rangeSearchUnits );
 
 		// Search All Fields switch
-		$prevSearchAllFields = (int)(boolean) get_option('range_search_search_all_fields');
-		$newSearchAllFields = (int)(boolean) $_POST['range_search_search_all_fields'];
-		set_option('range_search_search_all_fields', $newSearchAllFields);
+		$searchAllFields = (int)(boolean) $_POST['range_search_search_all_fields'];
+		set_option('range_search_search_all_fields', $searchAllFields);
 
 		// Limit Fields list (in case "Search All Fields" is false
-		$oldLimitFields = get_option('range_search_limit_fields');
-		$newLimitFields = array();
+		$limitFields = array();
 		$postIds=false;
 		if (isset($_POST["range_search_limit_fields"])) { $postIds = $_POST["range_search_limit_fields"]; }
 		if (is_array($postIds)) {
 			foreach($postIds as $postId) {
 				$postId = intval($postId);
-				if ($postId) { $newLimitFields[] = $postId; }
+				if ($postId) { $limitFields[] = $postId; }
 			}
 		}
-		sort($newLimitFields);
-		$newLimitFields = json_encode($newLimitFields);
-		set_option('range_search_limit_fields', $newLimitFields);
+		sort($limitFields);
+		$limitFields = json_encode($limitFields);
+		set_option('range_search_limit_fields', $limitFields);
 
 		// Search Relationship Comments switch
-		$prevSearchRelComments = (int)(boolean) get_option('range_search_search_rel_comments');
-		$newSearchRelComments = (int)(boolean) $_POST['range_search_search_rel_comments'];
-		set_option('range_search_search_rel_comments', $newSearchRelComments);
+		$searchRelComments = (int)(boolean) $_POST['range_search_search_rel_comments'];
+		set_option('range_search_search_rel_comments', $searchRelComments);
 
-		$reprocess = false;
-		$reprocess = ( ($reprocess) or ($oldRangeSearchUnits != $newRangeSearchUnits) ); 
-		$reprocess = ( ($reprocess) or ($prevSearchAllFields != $newSearchAllFields) ); 
-		$reprocess = ( ($reprocess) or ( (!$newSearchAllFields) && ($oldLimitFields != $newLimitFields) ) ); 
-		$reprocess = ( ($reprocess) or ( (!$newSearchAllFields) && ($prevSearchRelComments != $newSearchRelComments) ) ); 
+		// Debug Output switch -- if present
+		$debugOutput = 0; // Sanity
+		if (isset($_POST['range_search_debug_output'])) {
+			$debugOutput = (int)(boolean) $_POST['range_search_debug_output'];
+		}
+		set_option('range_search_debug_output', $debugOutput);
 
+		$reprocess = (int)(boolean) $_POST['range_search_trigger_reindex'];
 		if ($reprocess) { SELF::_batchProcessExistingItems(); }
 		# echo "<pre>"; print_r($_POST); echo "</pre>"; die();
 	}
 
 	/**
-	 * Decode JSON array from DB option -- imploded with "\n" it will be displayable in textarea on config page
+	 * Fetch JSON array from DB option and prepare it to be edited in textarea on config page
 	 */
-	private function _decodeUnitsFromOption($option, $pregQuote = false) {
-		$lines = ($option ? json_decode($option) : array() );
-		if ($pregQuote) {
-			foreach(array_keys($lines) as $idx) { $lines[$idx] = preg_quote($lines[$idx]); }
+	private function _prepareUnitsFromJsonForEdit() {
+		$json = get_option('range_search_units');
+		$json = ( $json ? $json : "[]" );
+
+		$arr = json_decode($json);
+		$result = ( $arr ? implode("\n", $arr) : "" );
+
+		return $result;
+	}
+
+	/**
+	 * Fetch JSON array from DB option and transform plausible entries for use in RegEx
+	 */
+	private function _decodeUnitsForRegEx() {
+		$result = array();
+
+		$json = get_option('range_search_units');
+		$json = ( $json ? $json : "[]" );
+		$arr = json_decode($json);
+
+		if ($arr) {
+			foreach($arr as $unit) {
+				if ( substr_count($unit, "-") == 2 ) { // e.h. "RT-Gr-d"
+					$units = explode("-", $unit);
+					foreach(array_keys($units) as $idx) { $units[$idx] = preg_quote(trim($units[$idx])); }
+					if ( $units[0] && $units[1] && $units[2] ) {
+						$result[$unit] = $units;
+					}
+				}
+			}
 		}
-		return $lines;
+
+		return $result;
 	}
 
 	/**
@@ -312,7 +352,7 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 
 					$elementTexts = $db -> fetchAll("select text from `$db->ElementTexts`".
 																					" where record_id=$item_id".
-																					" and element_id in ($elementIds)");
+																					" and element_id in $elementIds");
 					if ($elementTexts) {
 						$text = "";
 						foreach($elementTexts as $elementText) { $text .= " " . $elementText["text"]; }
@@ -355,8 +395,55 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 	/**
 	 * Display the time search form on the admin advanced search page
 	 */
-	public function hookAdminItemsSearch() {
-		echo common('range-search-advanced-search', null);
+	protected function _itemsSearch() {
+		$validUnits = SELF::_decodeUnitsForRegEx();
+		if ($validUnits) {
+			$selectUnits = /* array(-1 => "-- ".__("All")." --" ) + */ array_keys($validUnits);
+			# echo "<pre>" . print_r(array_keys($selectUnits),true) . "</pre>";
+			echo common('range-search-advanced-search', array("selectUnits" => $selectUnits ));
+		}
+	}
+
+	/**
+	 * Display the time search form on the admin advanced search page in admin
+	 */
+	public function hookAdminItemsSearch() { SELF::_itemsSearch();  }
+
+	/**
+	 * Display the time search form on the admin advanced search page in admin
+	 */
+	public function hookPublicItemsSearch() { SELF::_itemsSearch();  }
+
+  /**
+  * Debug output of stored numbers/ranges in item's sidebar (if activated)
+  *
+  * @param Item $item
+  */
+  public function hookAdminItemsShowSidebar($args) {
+		$debugOutput = (int)(boolean) get_option('range_search_debug_output');
+		if ($debugOutput) {
+			$itemID = $args['item']['id'];
+			if ($itemID) {
+				echo "<div class='panel'><h4>".__("Range Search Debug Output")."</h4>\n";
+				$db = get_db();
+				$sql = "select * from `$db->RangeSearchValues` where item_id=$itemID";
+				$ranges = $db->fetchAll($sql);
+				if ($ranges) {
+					echo "<ul>\n";
+					foreach($ranges as $range) {
+						$rangeUnit = $range["unit"];
+						preg_match_all('!\d+!', $range["fromnum"], $numFrom);
+						preg_match_all('!\d+!', $range["tonum"], $numTo);
+						echo "<li>". intval($numFrom[0][0])."-".intval($numFrom[0][1])."-".intval($numFrom[0][2]).
+									" … ". intval($numTo[0][0])."-".intval($numTo[0][1])."-".intval($numTo[0][2]).
+									" " . $rangeUnit.
+									"</li>\n";
+					}
+					echo "</ul>\n";
+				}
+				echo "</div>\n";
+			}
+		}
 	}
 
 	/**
@@ -371,10 +458,10 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 		$regEx = SELF::_constructRegEx();
 		foreach($regEx as $key => $val) { $$key = $val; }
 		if (	(isset($params['range_search_term'])) and
-					(preg_match( "($numberNumberRange)", $params['range_search_term'])) ) {
+					(preg_match( "($unitlessNumberNumberRange)", $params['range_search_term'])) ) {
 
-			$singleCount = preg_match_all ( "($number)", $params['range_search_term'], $singleSplit );
-			# echo "<pre>singleCount: "; print_r($singleSplit); echo "</pre>";
+			$singleCount = preg_match_all ( "($unitlessNumber)", $params['range_search_term'], $singleSplit );
+			# echo "<pre>singleCount: " . print_r($singleSplit,true) . "</pre>"; die();
 			$numberRange = array();
 			$numberRange[] = $singleSplit[0][0];
 			$numberRange[] = $singleSplit[0][ ($singleCount==2 ? 1 : 0 ) ];
@@ -392,15 +479,21 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 					)
 					->where("'$searchFromNum'<=range_search_values.tonum and '$searchToNum'>=range_search_values.fromnum");
 
-			if (isset($params['range_search_unit'])) {
-				$rangeSearchUnit = intval($params['range_search_unit']);
-
-				$RangeSearchUnits = get_option('range_search_units');
-				if ($RangeSearchUnits) {
-					$RangeSearchUnits=json_decode($RangeSearchUnits);
-					if (isset($RangeSearchUnits[$rangeSearchUnit])) {
-						$filterUnit = $RangeSearchUnits[$rangeSearchUnit];
-						$select->where("range_search_values.unit='$filterUnit'");
+			if ( (isset($params['range_search_unit'])) and (is_array($params['range_search_unit'])) ) {
+				$rangeSearchFormUnits = array();
+				foreach($params['range_search_unit'] as $unit) { $rangeSearchFormUnits[] = intval($unit); }
+				if ($rangeSearchFormUnits) {
+					$validUnits = SELF::_decodeUnitsForRegEx();
+					if ($validUnits) {
+						$RangeSearchUnits = array_keys($validUnits);
+						$dbUnits = array();
+						foreach($rangeSearchFormUnits as $unit) {
+							if (isset($RangeSearchUnits[$unit])) { $dbUnits[] = addslashes($RangeSearchUnits[$unit]); }
+						}
+						if ($dbUnits) {
+							$dbUnits = "'" . implode("','", $dbUnits) . "'";
+							$select->where("range_search_values.unit in ($dbUnits)");
+						}
 					}
 				}
 			}
@@ -431,24 +524,39 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 	 */
 	private function _processRangeText($text) {
 		$regEx = SELF::_constructRegEx();
+		# echo "<pre>$text\n" . print_r($regEx,true) . "</pre>";
 		foreach($regEx as $key => $val) { $$key = $val; }
 
-		$allCount = preg_match_all( "($numberRangeUnits)i", $text, $allMatches);
-		# echo "<pre>Count: $allCount\n"; print_r($allMatches); die("</pre>");
+		$allCount = preg_match_all( "($combinedRegEx)i", $text, $allMatches);
+		# echo "<pre>Count: $allCount\n" . print_r($allMatches,true) . "</pre>";
 
 		$cookedRanges = array();
 		foreach($allMatches[0] as $singleMatch) {
-			$singleCount = preg_match_all ( "($number)", $singleMatch, $singleSplit );
-			$numberRange = array();
-			$numberRange[] = $singleSplit[0][0];
-			$numberRange[] = $singleSplit[0][ ($singleCount==2 ? 1 : 0 ) ];
-			$numberRange = SELF::_expandNumberRange($numberRange);
-			$unit = preg_match( "($units)i", $singleMatch, $unitMatch );
-			# echo "<pre>"; print_r($unitMatch); echo "</pre>"; die();
-			$numberRange[] = $unitMatch[0];
-			$cookedRanges[] = $numberRange;
+
+			$usedRegExId = false;
+			foreach($singleRegEx as $id => $testString) {
+				$count = preg_match("($testString)i", $singleMatch);
+				if ($count) { $usedRegExId = $id; break; }
+			}
+
+			if ($usedRegExId) {
+				$usedUnit = substr($usedRegExId, 0, strrpos($usedRegExId, "/") );
+				$number = $unitRegEx[$usedUnit];
+				#echo "<pre>'$singleMatch' = $usedRegExId / $usedUnit ($number)</pre>";
+
+				$singleCount = preg_match_all ( "($number)i", $singleMatch, $singleSplit );
+				# echo "<pre>singleCount: $singleCount\n" . print_r($singleSplit,true) . "</pre>";
+				$numberRange = array();
+				$numberRange[] = $singleSplit[0][0];
+				$numberRange[] = $singleSplit[0][ ($singleCount==2 ? 1 : 0 ) ];
+				$numberRange = SELF::_expandNumberRange($numberRange);
+				# echo "<pre>" . print_r($numberRange,true) . "</pre>";
+				$numberRange[] = $usedUnit;
+				$cookedRanges[] = $numberRange;
+			}
 		}
-		# echo "<pre>"; print_r($cookedRanges); die("</pre>");
+		# echo "<pre>" . print_r($cookedRanges,true) . "</pre>"; die();
+		# die();
 
 		return $cookedRanges;
 	}
@@ -459,34 +567,90 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 	 * Create the necessary regEx expressions to deal with xxxx / xxxx-yy / xxxx-yy-zz numbers
 	 */
 	private function _constructRegEx() {
-
 		# Construct RegEx
+		$DBunits = SELF::_decodeUnitsForRegEx();
+
+		$blank = "\s*"; # just whitespace
+		$justSeparator = "-"; # just hyphen
+		$separator = $blank.$justSeparator.$blank; # separator hypen, with or without blanks
 		$mainNumber = "\d{1,10}"; # 1 to 10 digits for main number
 		$middleNumber = $lastNumber = "\d{1,4}"; # 1 or four digits for middle and last number
-		$middleLastNumber = "$middleNumber(?:-$lastNumber)?"; # middle number - possibly with last number
-		$number = "$mainNumber(?:-$middleLastNumber)?\b"; # main number - possible with middle and possible with last number
-		$separator = "\s*-\s*"; # separator hypen, with or without blanks
-		$numberNumberRange = "$number(?:$separator$number)?"; # one number or two numbers with separator in-between
+		$middleLastNumber = "$middleNumber(?:$justSeparator$lastNumber)?"; # middle number - possibly with last number
+		$unitlessNumber = "$mainNumber(?:$justSeparator$middleLastNumber)?\b"; # main number - possible with middle and possible with last number
+		$unitlessNumberNumberRange = "$unitlessNumber(?:$justSeparator$unitlessNumber)?"; # one number or two numbers with separator in-between
 
-		$unitsArray = SELF::_decodeUnitsFromOption(get_option('range_search_units'), true);
-		$units = "\b(?:" . implode("|", $unitsArray) . ")\b";
-		$numberRangeUnits = "$numberNumberRange\s$units";
+		$singleRegEx = array();
+		$combinedRegEx = false;
+		$unitRegEx = array();
+
+		if ($DBunits) {
+
+			$longMiddleShort = array();
+			$longMiddleShortRange = array();
+
+			foreach($DBunits as $unit) {
+				$unitId = implode("-", $unit);
+
+				$mainUnit = "$mainNumber".$unit[0];
+				$middleUnit = "$middleNumber".$unit[1];
+				$lastUnit = "$lastNumber".$unit[2];
+
+				$optionalLastUnit = "(?:$justSeparator$lastUnit)?";
+				$optionalMiddleUnit = "(?:$justSeparator$middleUnit$optionalLastUnit)?";
+				$unitRegEx[$unitId] = "$mainUnit$optionalMiddleUnit";
+
+				$short = "$mainUnit";
+				$shortMiddle = "$short$justSeparator$middleUnit";
+				$shortMiddleLong = "$shortMiddle$justSeparator$lastUnit";
+
+				$thisLongMiddleShort = array( $shortMiddleLong, $shortMiddle, $short);
+
+				$thisLongMiddleShortRange = array();
+				foreach($thisLongMiddleShort as $front) { // ABC|AB|A cross-product ...
+					foreach($thisLongMiddleShort as $back) { // ... with ABC|AB|A
+						$thisLongMiddleShortRange[] = "$front$separator$back";
+					}
+				}
+				foreach($thisLongMiddleShort as $single) { $thisLongMiddleShortRange[] = "$single"; } // ABC|AB|A single
+
+				$longMiddleShort[$unitId] = $thisLongMiddleShort;
+				$longMiddleShortRange[$unitId] = $thisLongMiddleShortRange;
+			}
+
+			$maxidx = 12; // 9 == ABC|AB|A cross product ABC|AB|A + 3 == ABC|AB|A single
+			for($i=0; $i<$maxidx; $i++) {
+				foreach(array_keys($longMiddleShortRange) as $unitID) {
+					$singleRegEx["$unitID/$i"] = $longMiddleShortRange[$unitID][$i];
+				}
+			}
+			$combinedRegEx = "(?:" . implode("|",  $singleRegEx) . ")";
+
+		}
+
+		#echo "<pre>longMiddleShort\n" .  print_r($longMiddleShort,true). "</pre>";
+		#echo "<pre>longMiddleShortRange\n" .  print_r($longMiddleShortRange,true). "</pre>";
+		#echo "<pre>combinedRegEx\n$combinedRegEx</pre>";
 
 		$result = array(
+								"justSeparator" => $justSeparator,
+								"separator" => $separator,
+								"blank" => $blank,
 								"mainNumber" => $mainNumber,
 								"middleNumber" => $middleNumber,
 								"lastNumber" => $lastNumber,
 								"middleLastNumber" => $middleLastNumber,
-								"number" => $number,
-								"separator" => $separator,
-								"numberNumberRange" => $numberNumberRange,
-								"units" => $units,
-								"numberRangeUnits" => $numberRangeUnits,
+								"unitlessNumber" => $unitlessNumber,
+								"unitlessNumberNumberRange" => $unitlessNumberNumberRange,
+								# "longMiddleShort" => $longMiddleShort,
+								# "longMiddleShortRange" => $longMiddleShortRange,
+								"unitRegEx" => $unitRegEx,
+								"singleRegEx" => $singleRegEx,
+								"combinedRegEx" => $combinedRegEx,
 							);
-		# echo "<pre>"; print_r($result); echo "</pre>\n"; die();
+		# echo "<pre>" .  print_r($result,true). "</pre>";
+		# die();
 
 		return $result;
-
 	}
 
 	# ------------------------------------------------------------------------------------------------------
@@ -500,6 +664,8 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 	private function _expandNumberRange($range) {
 		$result = $range;
 	
+		#echo "<pre>_expandNumberRange:\n" . print_r($range,true) . "</pre>";
+
 		if (!is_array($result)) { $result = array($result, $result); }
 	
 		$result[0] = SELF::_updateRange($result[0], -1); # -1 == left edge, xxxxxxxxxx-00-00
@@ -511,40 +677,28 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 	# ------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Take a valid xxxx / xxxx-y / xxxx-yy / xxxx-y-z / xxxx-yy-z / xxxx-yy-zz
-	 * and transform it towards a left edge of possibly xxxx-00-00 or xxxx-99-99
+	 * Take a valid xxxx / xxxx-y / xxxx-y-z / xxxx-yy-z / xxxx-yy-zz
+	 * and transform it towards a left edge of possibly xxxx-0000-0000 or xxxx-9999-9999
 	 * or at least add leading zeros, as in 000000xxxx-0y-0z
 	 *
 	 * @param string $range to be updated
-	 * @param int edge -- -1 -> left edge (-00-00) / +1 -> right edge (-99-99)
+	 * @param int edge -- -1 -> left edge (-0000-0000) / +1 -> right edge (-9999-9999)
 	 * @result string $range -- transformed towards edge and with leading zeros
 	 */
 
 	private function _updateRange($range, $edge) {
-		$result=$range;
-	
-		$regEx = SELF::_constructRegEx();
-		foreach($regEx as $key => $val) { $$key = $val; }
-	
-		$mainNumberOnly = "^$mainNumber$";
-		$mainMiddleNumber = "^$mainNumber-$middleNumber$";
-		$mainMiddleLastNumber = "^$mainNumber-$middleNumber-$lastNumber$";
-	
-		if ( preg_match( "($mainNumberOnly)", $result ) ) { $result = $result."-".( $edge<0 ? "0" : "9999" ); }
-		if ( preg_match( "($mainMiddleNumber)", $result ) ) { $result = $result."-".( $edge<0 ? "0" : "9999" ); }
-	
-		if ( preg_match( "($mainMiddleLastNumber)", $result ) ) {
-			$OneDigit = "\b(\d)\b";
-			$TwoDigit = "\b(\d\d)\b";
-			$ThreeDigit = "\b(\d\d\d)\b";
-			$result = preg_replace("($OneDigit)", '000${0}', $result);
-			$result = preg_replace("($TwoDigit)", '00${0}', $result);
-			$result = preg_replace("($ThreeDigit)", '0${0}', $result);
+		$numNumbers = preg_match_all('!\d+!', $range, $numbers); // extract number components -- up to three
+
+		if ($numNumbers) { $components = $numbers[0]; } else { $components = array(0); }
+
+		$compLengths = array(10,4,4);
+		for($i=0; ($i<3); $i++) {
+			if (isset($components[$i])) { $components[$i] = $components[$i]; } else { $components[$i] = ( $edge<0 ? 0 : 9999 ); }
+			$components[$i] = substr( "0000000000".$components[$i], -$compLengths[$i] );
 		}
-	
-		while (strlen($result)<20) { $result="0$result"; }
-	
-		return $result;
+
+		#echo "<pre>components: " . print_r($components,true) . "</pre>";
+		return implode("-", $components);
 	}
 
 	# ------------------------------------------------------------------------------------------------------
