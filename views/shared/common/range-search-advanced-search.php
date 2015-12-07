@@ -1,6 +1,6 @@
 <div class="field">
 		<div class="two columns alpha">
-				<?php echo $this->formLabel('date_search_search', __('Range Search')); ?>
+				<?php echo $this->formLabel('range_search_term', __('Range Search')); ?>
 		</div>
 		<div class="inputs five columns omega">
 				<p class="explanation">

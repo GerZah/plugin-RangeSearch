@@ -1,106 +1,98 @@
 # Translation for the Range Search plugin for Omeka.
 # Copyright (C) 2015 Gero Zahn
 # This file is distributed under the same license as the Omeka package.
-# Gero Zahn <gero.zahn@upb.de>, 2015.
 #
+# Translators:
+# Gero Zahn <gerozahn@campus.uni-paderborn.de>, 2015
 msgid ""
 msgstr ""
-"Project-Id-Version: RangeSearch\n"
+"Project-Id-Version: WeSa Omeka\n"
 "Report-Msgid-Bugs-To: http://github.com/omeka/plugin-RangeSearch/issues\n"
 "POT-Creation-Date: 2012-01-09 21:49-0500\n"
-"PO-Revision-Date: 2015-10-27 15:50+0100\n"
-"Last-Translator: Gero Zahn <gero.zahn@upb.de>\n"
-"Language-Team: de_DE <LL@li.org>\n"
-"Language: de_DE\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=iso-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.5\n"
+"Language: de_DE\n"
+"X-Generator: Poedit 1.8.6\n"
 
-#: RangeSearchPlugin.php:416
+#: RangeSearchPlugin.php:429
 msgid "Range Search Debug Output"
 msgstr "Bereichs-Suche Debug-Ausgabe"
 
-#: config_form.php:3
+#: RangeSearchUI.php:11
+msgid "Please select a target text area first."
+msgstr "Bitte wählen Sie zuerst ein Eingabefeld als Ziel."
+
+#: RangeSearchUI.php:12
+msgid "Please select a unit."
+msgstr "Bitte wählen Sie eine Einheit."
+
+#: RangeSearchUI.php:13
+msgid "Please enter a number."
+msgstr "Bitte geben Sie eine Zahl ein."
+
+#: RangeSearchUI.php:53 RangeSearchUI.php:106
+msgid "Range Entry"
+msgstr "Bereichseingabe"
+
+#: RangeSearchUI.php:61 config_form.php:3
 msgid "Units"
 msgstr "Einheiten"
 
+#: RangeSearchUI.php:80
+msgid "… (Range)"
+msgstr "… (Bereich)"
+
+#: RangeSearchUI.php:99
+msgid "Apply"
+msgstr "Anwenden"
+
+#: RangeSearchUI.php:107
+msgid "Entry"
+msgstr "Eingabe"
+
 #: config_form.php:8
-msgid ""
-"Please enter all units that you would like to support, one per line."
-"<br><em>Please note:</em> Units name may not be longer than 20 characters."
-msgstr ""
-"Bitte geben Sie alle Einheiten ein, die Sie unterstützen wollen, eine pro "
-"Zeile.<br><em>Bitte beachten:</em> Einheiten dürfen maximal 20 Zeichen lang "
-"sein."
+msgid "Please enter all units that you would like to support, one per line.<br><em>Please note:</em> Units name may not be longer than 20 characters."
+msgstr "Bitte geben Sie alle Einheiten ein, die Sie unterstützen wollen, eine pro Zeile.<br><em>Bitte beachten:</em> Einheiten dürfen maximal 20 Zeichen lang sein."
 
 #: config_form.php:19
 msgid "Scan All Text Fields"
 msgstr "Alle Textfelder durchsuchen"
 
 #: config_form.php:24
-msgid ""
-"Check this if you want numbers / ranges processing to be carried out within "
-"all of an item's text fields."
-msgstr ""
-"Wählen Sie dies aus, wenn Sie Zahlen oder Bereiche in allen Textfeldern "
-"eines Objektes suchen wollen."
+msgid "Check this if you want numbers / ranges processing to be carried out within all of an item's text fields."
+msgstr "Wählen Sie dies aus, wenn Sie Zahlen oder Bereiche in allen Textfeldern eines Objektes suchen wollen."
 
 #: config_form.php:31
 msgid "Limit Scan to Fields"
 msgstr "Suche auf Felder beschränken"
 
 #: config_form.php:36
-msgid ""
-"Please select the elements i.e. fields that the scan for names / ranges "
-"should be limited to.<br><em>Please note:</em> To select multiple entries, "
-"try holding the Ctrl key (Windows) or the Cmd key (Mac) while clicking."
-msgstr ""
-"Bitte wählen Sie die Elemente bzw. Felder, auf die die Suche nach Nummern "
-"beschränkt sein soll.<br><em>Bitte beachten Sie:</em> Um mehrere Einträge "
-"auszuwählen, halten Sie bitte während des Klickens die Strg-Taste (Windows) "
-"bzw. die Command-Taste (Mac) gedrückt."
+msgid "Please select the elements i.e. fields that the scan for names / ranges should be limited to.<br><em>Please note:</em> To select multiple entries, try holding the Ctrl key (Windows) or the Cmd key (Mac) while clicking."
+msgstr "Bitte wählen Sie die Elemente bzw. Felder, auf die die Suche nach Nummern beschränkt sein soll.<br><em>Bitte beachten Sie:</em> Um mehrere Einträge auszuwählen, halten Sie bitte während des Klickens die Strg-Taste (Windows) bzw. die Command-Taste (Mac) gedrückt."
 
 #: config_form.php:45
 msgid "Scan Inside Relationship Comments"
 msgstr "Innerhalb von Objekt-Beziehungs-Kommentaren suchen"
 
 #: config_form.php:50
-msgid ""
-"The Item Relationships add-on is installed, and it has been patched to "
-"feature relationship comments. Check this if you want Range Search to scan "
-"inside relationship comments."
-msgstr ""
-"Das Objekt-Beziehungen (Item Relationships) Add-on ist installiert, und es "
-"ist gepatcht, um Beziehungs-Kommentare zu unterstützen. Wählen Sie dies aus, "
-"wenn die Suche innerhalb der Beziehungskommentare erfolgen soll."
+msgid "The Item Relationships add-on is installed, and it has been patched to feature relationship comments. Check this if you want Range Search to scan inside relationship comments."
+msgstr "Das Objekt-Beziehungen (Item Relationships) Add-on ist installiert, und es ist gepatcht, um Beziehungs-Kommentare zu unterstützen. Wählen Sie dies aus, wenn die Suche innerhalb der Beziehungskommentare erfolgen soll."
 
 #: config_form.php:87
 msgid "Trigger Re-indexing of Existing Content"
 msgstr "Re-Indexierung von bestehendem Inhalt auslösen"
 
 #: config_form.php:92
-msgid ""
-"<strong>Please note:</strong> Checking this box will re-generate the index "
-"<em>now</em> and exactly <em>once</em>. This action will be carried out as "
-"soon as you click on \"Save Changes\"."
-msgstr ""
-"<strong>Bitte beachten:</strong> Wenn Sie diese Option auswählen, wird der "
-"Index <em>jetzt</em> und genau <em>einmal</em>neu generiert. Diese Aktion "
-"wird durchgeführt, sobald Sie auf „Änderungen speichern“ klicken."
+msgid "<strong>Please note:</strong> Checking this box will re-generate the index <em>now</em> and exactly <em>once</em>. This action will be carried out as soon as you click on \"Save Changes\"."
+msgstr "<strong>Bitte beachten:</strong> Wenn Sie diese Option auswählen, wird der Index <em>jetzt</em> und genau <em>einmal</em>neu generiert. Diese Aktion wird durchgeführt, sobald Sie auf „Änderungen speichern“ klicken."
 
 #: config_form.php:99
-msgid ""
-"<em>Explanation:</em> Range Search relies on a search index that is being "
-"created during content maintenance in the background. However, existing "
-"content will not be re-indexed automatically. So if you have existing "
-"content or modify your settings, you should re-generate the search index."
-msgstr ""
-"<em>Erläuterung:</em> Die Bereichs-Suche stützt sich auf einen Suchindex, "
-"der während der Inhaltspflege im Hintergrund erstellt wird. Jedoch werden "
-"vorhandene Inhalte nicht automatisch erneut indexiert. Sofern Ihre Datenbank "
-"also über bestehende Inhalte verfügt, oder wenn Sie Ihre Einstellungen "
-"ändern, sollten Sie den Suchindex neu generieren."
+msgid "<em>Explanation:</em> Range Search relies on a search index that is being created during content maintenance in the background. However, existing content will not be re-indexed automatically. So if you have existing content or modify your settings, you should re-generate the search index."
+msgstr "<em>Erläuterung:</em> Die Bereichs-Suche stützt sich auf einen Suchindex, der während der Inhaltspflege im Hintergrund erstellt wird. Jedoch werden vorhandene Inhalte nicht automatisch erneut indexiert. Sofern Ihre Datenbank also über bestehende Inhalte verfügt, oder wenn Sie Ihre Einstellungen ändern, sollten Sie den Suchindex neu generieren."
 
 #: config_form.php:108
 msgid "Debug Output"
@@ -111,18 +103,5 @@ msgid "Range Search"
 msgstr "Bereichs-Suche"
 
 #: views/shared/common/range-search-advanced-search.php:8
-msgid ""
-"You may enter a number in the forms XXXX, XXXX-YY, or XXXX-YY-ZZ, or a "
-"number range consisting of two numbers, separated by a hypen (\"-\"). You "
-"may also select one of the units that you defined to limit the search to. "
-"Range Search will find items that contain numbers and number ranges matching "
-"your search. For example: \"500\" will find an item mentioning the number "
-"range \"450-550\"."
-msgstr ""
-"Sie können eine Zahl in der Form XXXX, XXXX-YY oder XXXX-YY-ZZ eingeben, "
-"oder einen Zahlenbereich, bestehend aus zwei Zahlen, getrennt durch einen "
-"Bindestrich(\"-\"). Darüber hinaus können Sie eine von Ihnen gewählte "
-"Einheit auswählen, um die Suche zu begrenzen. Die Bereichs-Suche findet "
-"Objekte, die Zahlen oder Zahlenbereiche enthalten, die zur Suche passen. "
-"Beispielweise wird die Suche nach \"500\" ein Objekt finden, das den "
-"Zahlenbereich \"450-550\" enthält."
+msgid "You may enter a number in the forms XXXX, XXXX-YY, or XXXX-YY-ZZ, or a number range consisting of two numbers, separated by a hypen (\"-\"). You may also select one of the units that you defined to limit the search to. Range Search will find items that contain numbers and number ranges matching your search. For example: \"500\" will find an item mentioning the number range \"450-550\"."
+msgstr "Sie können eine Zahl in der Form XXXX, XXXX-YY oder XXXX-YY-ZZ eingeben, oder einen Zahlenbereich, bestehend aus zwei Zahlen, getrennt durch einen Bindestrich(\"-\"). Darüber hinaus können Sie eine von Ihnen gewählte Einheit auswählen, um die Suche zu begrenzen. Die Bereichs-Suche findet Objekte, die Zahlen oder Zahlenbereiche enthalten, die zur Suche passen. Beispielweise wird die Suche nach \"500\" ein Objekt finden, das den Zahlenbereich \"450-550\" enthält."

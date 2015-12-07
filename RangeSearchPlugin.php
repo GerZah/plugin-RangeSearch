@@ -23,6 +23,7 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 		'public_items_search', # add a time search field to the advanced search panel in public
 		'admin_items_show_sidebar', # Debug output of stored numbers/ranges in item's sidebar (if activated)
 		'items_browse_sql', # filter for a range after search page submission.
+		'admin_head', # add lightbox overlay to enter / edit / convert numbers & ranges
 	);
 
 	protected $_options = array(
@@ -64,7 +65,7 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 
 		SELF::_installOptions();
 
-		SELF::_batchProcessExistingItems();
+		# SELF::_batchProcessExistingItems(); # Don't ... Do it only if configured.
 	}
 
 	/**
@@ -174,28 +175,29 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 	}
 
 	/**
-	 * Fetch JSON array from DB option and prepare it to be edited in textarea on config page
+	 * Fetch JSON array from DB option as a PHP array
 	 */
-	private function _prepareUnitsFromJsonForEdit() {
+	private function _fetchUnitArray() {
 		$json = get_option('range_search_units');
 		$json = ( $json ? $json : "[]" );
-
-		$arr = json_decode($json);
-		$result = ( $arr ? implode("\n", $arr) : "" );
-
-		return $result;
+		return json_decode($json);
 	}
 
 	/**
-	 * Fetch JSON array from DB option and transform plausible entries for use in RegEx
+	 * Transform unit array to be edited in textarea on config page
+	 */
+	private function _prepareUnitsFromJsonForEdit() {
+		$arr = SELF::_fetchUnitArray();
+		return ( $arr ? implode("\n", $arr) : "" );
+	}
+
+	/**
+	 * Transform plausible entries from units array for use in RegEx
 	 */
 	private function _decodeUnitsForRegEx() {
 		$result = array();
 
-		$json = get_option('range_search_units');
-		$json = ( $json ? $json : "[]" );
-		$arr = json_decode($json);
-
+		$arr = SELF::_fetchUnitArray();
 		if ($arr) {
 			foreach($arr as $unit) {
 				if ( substr_count($unit, "-") == 2 ) { // e.h. "RT-Gr-d"
@@ -213,7 +215,7 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 
 	/**
 	 * Encode content of textarea on config page to be stored as a JSON array in DB option
-	 */                                
+	 */
 	private function _encodeUnitsFromTextArea($textArea) {
 		$textArea = str_replace(chr(10), chr(13), $textArea);
 		$textArea = str_replace(chr(13).chr(13), chr(13), $textArea);
@@ -663,17 +665,17 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 	 */
 	private function _expandNumberRange($range) {
 		$result = $range;
-	
+
 		#echo "<pre>_expandNumberRange:\n" . print_r($range,true) . "</pre>";
 
 		if (!is_array($result)) { $result = array($result, $result); }
-	
+
 		$result[0] = SELF::_updateRange($result[0], -1); # -1 == left edge, xxxxxxxxxx-00-00
 		$result[1] = SELF::_updateRange($result[1], +1); # +1 == right edge, xxxxxxxxxx-99-99
-		
+
 		return $result;
 	}
-	
+
 	# ------------------------------------------------------------------------------------------------------
 
 	/**
@@ -702,5 +704,26 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 	}
 
 	# ------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Sdd calendar sheet / date picker / Greg/Jul conversion functionality
+	 */
+	public function hookAdminHead() {
+		$request = Zend_Controller_Front::getInstance()->getRequest();
+
+		$module = $request->getModuleName();
+		if (is_null($module)) { $module = 'default'; }
+		$controller = $request->getControllerName();
+		$action = $request->getActionName();
+
+		if ($module === 'default'
+				&& $controller === 'items'
+				&& in_array($action, array('add', 'edit'))) {
+
+			require dirname(__FILE__) . '/RangeSearchUI.php';
+
+		}
+	}
+
 
 } # class
