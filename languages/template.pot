@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: RangeSearchPlugin.php:429
+#: RangeSearchPlugin.php:433
 msgid "Range Search Debug Output"
 msgstr ""
 
@@ -33,23 +33,31 @@ msgstr ""
 msgid "Please enter a number."
 msgstr ""
 
-#: RangeSearchUI.php:53 RangeSearchUI.php:106
+#: RangeSearchUI.php:56 RangeSearchUI.php:164
 msgid "Range Entry"
 msgstr ""
 
-#: RangeSearchUI.php:61 config_form.php:3
+#: RangeSearchUI.php:88 config_form.php:3
 msgid "Units"
 msgstr ""
 
-#: RangeSearchUI.php:80
+#: RangeSearchUI.php:118
 msgid "… (Range)"
 msgstr ""
 
-#: RangeSearchUI.php:99
+#: RangeSearchUI.php:134
+msgid "Conversion Rates"
+msgstr ""
+
+#: RangeSearchUI.php:146
+msgid "Convert"
+msgstr ""
+
+#: RangeSearchUI.php:157
 msgid "Apply"
 msgstr ""
 
-#: RangeSearchUI.php:107
+#: RangeSearchUI.php:165
 msgid "Entry"
 msgstr ""
 

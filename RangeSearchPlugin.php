@@ -1,5 +1,7 @@
 <?php
 
+define('UNIT_LEN', 200);
+
 /**
 * RangeSearch plugin.
 *
@@ -57,7 +59,7 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 				`item_id` int(10) unsigned NOT NULL REFERENCES `$db->Item`,
 				`fromnum` varchar(20) NOT NULL,
 				`tonum` varchar(20) NOT NULL,
-				`unit` varchar(200) NOT NULL,
+				`unit` varchar(".UNIT_LEN.") NOT NULL,
 				PRIMARY KEY (`id`),
 				INDEX (unit)
 		) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
@@ -96,7 +98,7 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 		if ($oldVersion <= '0.3') {
 			$sql="
 						ALTER TABLE `$db->RangeSearchValues`
-							MODIFY unit varchar(200)
+							MODIFY unit varchar(".UNIT_LEN.")
 						";
       $db->query($sql);
 			SELF::_batchProcessExistingItems();
@@ -200,7 +202,9 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 		$arr = SELF::_fetchUnitArray();
 		if ($arr) {
 			foreach($arr as $unit) {
-				if ( substr_count($unit, "-") == 2 ) { // e.h. "RT-Gr-d"
+				$blankBracket = strpos($unit, " (");
+				if ($blankBracket) { $unit = substr($unit, 0, $blankBracket); }
+				if ( substr_count($unit, "-") == 2 ) { // e.g. "RT-Gr-d"
 					$units = explode("-", $unit);
 					foreach(array_keys($units) as $idx) { $units[$idx] = preg_quote(trim($units[$idx])); }
 					if ( $units[0] && $units[1] && $units[2] ) {
@@ -225,7 +229,7 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 		$nonEmptyLines = array();
 		foreach($lines as $line) {
 			$line = trim($line);
-			$line = substr($line, 0, 20);
+			$line = substr($line, 0, UNIT_LEN);
 			if ($line) { $nonEmptyLines[]=$line; }
 		}
 

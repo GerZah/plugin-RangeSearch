@@ -1,0 +1,11 @@
+span.rangeTextArea {
+  display: inline-block;
+  vertical-align: middle;
+  text-align: center;
+  width: 8em;
+  height: 3em;
+  overflow: visible;
+  /*border: thin dotted red;*/
+}
+
+#rangeSearchConversion0 { background-color: #ccc; }
