@@ -252,15 +252,8 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 	 * @param array $args
 	 */
 	public function hookAfterSaveItem($args) {
-			if ( (!$args['post']) and (!$args['insert']) ) {
-					return;
-			}
-
-			$item_id = intval($args["record"]["id"]);
+			$item_id = intval(@$args["record"]["id"]);
 			if ($item_id) { SELF::_preProcessItem($item_id); }
-
-			# die("After Save Item");
-
 	} # hookAfterSaveItem()
 
 	/**
