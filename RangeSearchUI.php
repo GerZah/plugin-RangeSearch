@@ -36,7 +36,7 @@ EOT;
                             array("type" => "text",
                                   "class" => "rangeSearchTextField",
                                   "size" => 4,
-                                  "maxlength" => 4,
+                                  "maxlength" => 10,
                                 )
                             );
   }
@@ -56,41 +56,42 @@ EOT;
   <h2><?php echo __("Range Entry"); ?></h2>
   <p>
   <?php
-    $units = SELF::_fetchUnitArray();
-    $saniUnits = array( ); # -1 => __("Select Below") ); # Both arrays ...
-    $saniConversions = array(); # ... starting with index 0
-    foreach($units as $unit) {
-      $blankBracket = strpos($unit, " (");
-      if ($blankBracket) {
-        $conversion = substr($unit, $blankBracket+2);
-        $conversion = substr($conversion, 0, strpos($conversion, ")") );
-        preg_match_all("(\d+)", $conversion, $conversionDecimals);
-        if ($conversionDecimals) {
-          $conversionDecimals = $conversionDecimals[0];
-          foreach(array_keys($conversionDecimals) as $idx) {
-            $conversionDecimals[$idx] = ( $conversionDecimals[$idx]<1 ? 1 : $conversionDecimals[$idx] );
-          }
-          if ($conversionDecimals[0] != 1) { $conversionDecimals[0] = 1; }
-        }
-        # echo "<pre>#$conversion#</pre>"; #die();
-        # echo "<pre>" . print_r($conversionDecimals,true) . "</pre>"; # die();
-        $unit = substr($unit, 0, $blankBracket);
-      }
-      else { $conversionDecimals = array(); }
-      if ( substr_count($unit, "-") == 2 ) {
-        $saniUnits[] = $unit;
-        $saniConversions[] = $conversionDecimals;
+    $unitsDetails = SELF::_fetchUnitDetails();
+    $saniUnits = $unitsDetails["saniUnits"];
+    $saniConversions = $unitsDetails["saniConversions"];
+    $saniGroups = $unitsDetails["saniGroups"];
+    $existingGroups = $unitsDetails["existingGroups"];
+    $unitSelect = $unitsDetails["unitSelect"];
+
+    $jsGroups = array( 0 => array(), 1 => array() );
+    // $jsGroups[0] is going to store the groups with numerical IDs
+    // ... as array containing the corresponding triple units
+    // $jsGroups[1] is going to store an array of the triple unit IDs
+    // ... containing the corresponding numerical group ID
+    foreach(array_keys($existingGroups) as $idx => $groupTitle) {
+      $jsGroups[0][$idx] = $existingGroups[$groupTitle];
+      foreach($existingGroups[$groupTitle] as $id) {
+        $jsGroups[1][$id] = $idx;
       }
     }
-    // echo "<pre>" . print_r($saniUnits,true) . "</pre>";
-    // echo "<pre>" . print_r($saniConversions,true) . "</pre>";
-    $unitSelect = array( -1 => __("Select Below") ) + $saniUnits;
-    echo __("Units") . ": ". $view->formSelect('rangeSearchUnits', -1, array(), $unitSelect);
+    ksort($jsGroups[1]);
+    // In other words:
+    // $jsGroups[0] can be used to list all triple units based on a group ID
+    // $jsGroups[1] can be used to find one triple unit's group ID
+
+    // echo "<pre>" . print_r($jsGroups,true) . "</pre>";
+    // echo "<pre>" . print_r($unitsDetails,true) . "</pre>";
+    // die();
+    echo __("Triple Units") . ": ". $view->formSelect('rangeSearchUnits', -1, array(), $unitSelect).
+        "<div id='rangeSergeAutoConvDiv'>".
+        __("Auto Conversions") . ": " . $view->formSelect('rangeSergeAutoConv', -1, array(), array("foo" => "bar")).
+        "</div>";
   ?>
   </p>
   <?php
     $jsonSaniUnits = json_encode($saniUnits);
     $jsonSaniConversions = json_encode($saniConversions);
+    $jsonJsGroups = json_encode($jsGroups);
     queue_js_string("
       var rangeSearchSelectFirst='$selectFirst';
       var rangeSearchSelectUnit='$selectUnit';
@@ -98,6 +99,7 @@ EOT;
       $fullMatchRegEx
       var rangeSearchUnits=$jsonSaniUnits;
       var rangeSearchConversions=$jsonSaniConversions;
+      var rangeSearchGroups=$jsonJsGroups;
     ");
   ?>
   <p>

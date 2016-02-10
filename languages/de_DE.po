@@ -3,13 +3,13 @@
 # This file is distributed under the same license as the Omeka package.
 #
 # Translators:
-# Gero Zahn <gerozahn@campus.uni-paderborn.de>, 2015
+# Gero Zahn <gerozahn@campus.uni-paderborn.de>, 2015-2016
 msgid ""
 msgstr ""
 "Project-Id-Version: WeSa Omeka\n"
-"Report-Msgid-Bugs-To: http://github.com/omeka/plugin-RangeSearch/issues\n"
+"Report-Msgid-Bugs-To: http://github.com/GerZah/plugin-RangeSearch/issues\n"
 "POT-Creation-Date: 2012-01-09 21:49-0500\n"
-"PO-Revision-Date: 2015-12-22 16:07+0100\n"
+"PO-Revision-Date: 2016-02-10 16:19+0100\n"
 "Last-Translator: Gero Zahn <gerozahn@campus.uni-paderborn.de>\n"
 "Language-Team: German (Germany) (http://www.transifex.com/upb/wesa-omeka/language/de_DE/)\n"
 "MIME-Version: 1.0\n"
@@ -17,9 +17,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: de_DE\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 1.8.6\n"
+"X-Generator: Poedit 1.8.7\n"
 
-#: RangeSearchPlugin.php:433
+#: RangeSearchPlugin.php:197
+msgid "[n/a]"
+msgstr "[n.v.]"
+
+#: RangeSearchPlugin.php:486
 msgid "Range Search Debug Output"
 msgstr "Bereichs-Suche Debug-Ausgabe"
 
@@ -35,75 +39,182 @@ msgstr "Bitte wählen Sie eine Einheit."
 msgid "Please enter a number."
 msgstr "Bitte geben Sie eine Zahl ein."
 
-#: RangeSearchUI.php:56 RangeSearchUI.php:164
+#: RangeSearchUI.php:56 RangeSearchUI.php:166
 msgid "Range Entry"
 msgstr "Bereichseingabe"
 
-#: RangeSearchUI.php:88 config_form.php:3
-msgid "Units"
-msgstr "Einheiten"
+#. /pre>";
+#. echo "<pre>" . print_r($unitsDetails,true) . "</pre>";
+#. die();
+#: RangeSearchUI.php:85 config_form.php:3
+msgid "Triple Units"
+msgstr "Einheiten-Tripel"
 
-#: RangeSearchUI.php:118
+#: RangeSearchUI.php:87
+msgid "Auto Conversions"
+msgstr "Automatische Umrechnungen"
+
+#: RangeSearchUI.php:120
 msgid "… (Range)"
 msgstr "… (Bereich)"
 
-#: RangeSearchUI.php:134
+#: RangeSearchUI.php:136
 msgid "Conversion Rates"
 msgstr "Umrechnungssatz"
 
-#: RangeSearchUI.php:146
+#: RangeSearchUI.php:148
 msgid "Convert"
 msgstr "Umrechnen"
 
-#: RangeSearchUI.php:157
+#: RangeSearchUI.php:159
 msgid "Apply"
 msgstr "Anwenden"
 
-#: RangeSearchUI.php:165
+#: RangeSearchUI.php:167
 msgid "Entry"
 msgstr "Eingabe"
 
-#: config_form.php:8
-msgid "Please enter all units that you would like to support, one per line.<br><em>Please note:</em> Units name may not be longer than 20 characters."
-msgstr "Bitte geben Sie alle Einheiten ein, die Sie unterstützen wollen, eine pro Zeile.<br><em>Bitte beachten:</em> Einheiten dürfen maximal 20 Zeichen lang sein."
+#: config_form.php:7
+msgid "Please enter all triple units that you would like to support, one per line."
+msgstr "Bitte geben Sie alle Einheiten-Tripel ein, die Sie unterstützen wollen, eine pro Zeile."
 
-#: config_form.php:19
+#: config_form.php:17
+msgid "Please click here to show/hide additional information."
+msgstr "Bitte klicken Sie hier, um zusätzliche Informationen ein-/auszublenden."
+
+#: config_form.php:21
+msgid ""
+"\n"
+"<p>\n"
+"To specify a triple unit, please use the form “a-b-c”, e.g. like this:\n"
+"<pre>\n"
+"yd-ft-in\n"
+"m-cm-mm\n"
+"</pre>\n"
+"</p>\n"
+"<p>\n"
+"You may also specify hierarchical conversion rates between the three single units;\n"
+"you can do so by adding them in round bracktets after the triple unit, e.g. like this:\n"
+"<pre>\n"
+"yd-ft-in (1-3-12)\n"
+"m-cm-mm (1-100-10)\n"
+"</pre>\n"
+"By this you would have specified that (a) 1 yard equals 3 feet,\n"
+"while 1 foot equals 12 inch and (b) that 1 meter equals 100 centimeters,\n"
+"while 1 centimeter equals 10 millimeters. — Obviously, the first number inside\n"
+"the round brackets will always be “1”.\n"
+"</p>\n"
+"<p>\n"
+"Additionally, you may group multiple triple units into categories; you can do so\n"
+"by adding the category name in box brackets before the triple unit, e.g. like this:\n"
+"<pre>\n"
+"[Imperial] mi-yd-ft (1-1760-3)\n"
+"[Imperial] yd-ft-in (1-3-12)\n"
+"[Metric] km-m-cm (1-1000-100)\n"
+"[Metric] m-cm-mm (1-100-10)\n"
+"</pre>\n"
+"<em>Please note:</em> Assigning a group name does not require adding conversion rates.</p>\n"
+"<p>\n"
+"“Yard” / “feet” and “meter” / “centimeter” are specified twice in two different\n"
+"triple units. Within the same group of triple units, Range Search will\n"
+"automatically create a semantic coherence between identical single units, so you\n"
+"will be able to convert between them, based on their respective conversion rates.\n"
+"</p>\n"
+"<hr>\n"
+"<p>\n"
+"Entering numbers or ranges (hence the name, Range Search) into metadata fields,\n"
+"you may use the pop-up tool that you can reach from within the item editor. You\n"
+"may also type them manually in the form given below, i.e. using the concrete\n"
+"numbers together with the unit names, e.g. like this:\n"
+"<pre>\n"
+"1yd-2ft-3in\n"
+"1m-50cm - 2m\n"
+"</pre>\n"
+"As you can see, you may omit the last one or two numbers and units.<br>\n"
+"<em>Please note:</em> The first number (i.e. the highest significant unit) may\n"
+"be up to ten digits long, while the second and third number (i.e. the two lower\n"
+"significant units) may each be up to four digits long.\n"
+"</p>\n"
+"            "
+msgstr ""
+"\n"
+"<p>\n"
+"Um ein Einheiten-Tripel zu definieren, verwenden Sie bitte die Form „a-b-c“, z.B. so:\n"
+"<pre>\n"
+"yd-ft-in\n"
+"m-cm-mm\n"
+"</pre>\n"
+"</p>\n"
+"<p>\n"
+"Sie können darüber hinaus die hierarchischen Umrechnungsfaktoren zwischen den drei Einzel-Einheiten spezifizieren. Setzen Sie diese hierzu in runden Klammern hinter das Einheiten-Tripel, z.B. so:\n"
+"<pre>\n"
+"yd-ft-in (1-3-12)\n"
+"m-cm-mm (1-100-10)\n"
+"</pre>\n"
+"Damit hätten Sie definiert, dass (a) 1 Yard 3 Fuß entspricht, während 1 Fuß 12 Zoll entspricht, sowie dass (b) 1 Meter 100 Zentimetern entspricht, während 1 Zentimeter 10 Millimetern entspricht. — Offensichtlich muss die erste Zahl innerhalb der runden Klammern immer „1“ sein.\n"
+"</p>\n"
+"<p>\n"
+"Zusätzlich können Sie die verschiedenen Einheiten-Tripel in Kategorien gruppieren. Setzen Sie hierzu einen Kategorien-Namen in eckige Klammern vor das Einheiten-Tripel, z.B. so:\n"
+"<pre>\n"
+"[Imperial] mi-yd-ft (1-1760-3)\n"
+"[Imperial] yd-ft-in (1-3-12)\n"
+"[Metrisch] km-m-cm (1-1000-100)\n"
+"[Metrisch] m-cm-mm (1-100-10)\n"
+"</pre>\n"
+"<em>Bitte beachten Sie:</em> Für die Zuweisung eines Gruppen-Titels ist es nicht zwingend erforderlich, Umrechnungsfaktoren zu spezifizieren.\n"
+"</p>\n"
+"<p>\n"
+"Sowohl „Yard“ / „Fuß“ als auch „Meter“ / „Zentimeter“ wurden hier jeweils zweimal in zwei unterschiedlichen Einheiten-Tripeln spezifiziert. Innerhalb einer Gruppe von Einheiten-Tripeln stellt Bereichs-Suche automatisch den semantischen Zusammenhang zwischen identischen Einzel-Einheiten her, so dass Sie zwischen ihnen konvertieren können, basierend auf den jeweiligen Umrechnungsfaktoren.\n"
+"</p>\n"
+"<hr>\n"
+"<p>\n"
+"Um Zahlen oder Bereiche (daher der Name Bereichs-Suche) in Metadaten-Felder einzugeben, können Sie das Pop-Up-Tool verwenden, das Sie vom Objekteditor aus erreichen können. Sie können diese auch händisch in der unten angegebenen Form eingeben, indem Sie konkrete Zahlen mit den Einheiten-Namen verwenden, z.B. so:\n"
+"<pre>\n"
+"1yd-2ft-3in\n"
+"1m-50cm - 2m\n"
+"</pre>\n"
+"Wie Sie sehen können, können Sie die letzten ein oder zwei Zahlen und Einheiten auslassen.<br>\n"
+"<em>Bitte beachten Sie:</em> Die erste Zahl (d.h. die höchstwertige Einheit) kann bis zu zehn Ziffern lang sein, während die zweite und dritte Zahl (d.h. die beiden niedrigerwertigen Einheiten) nur jeweils bis zu vier Ziffern lang sein können.\n"
+"</p>\n"
+"            "
+
+#: config_form.php:77
 msgid "Scan All Text Fields"
 msgstr "Alle Textfelder durchsuchen"
 
-#: config_form.php:24
+#: config_form.php:82
 msgid "Check this if you want numbers / ranges processing to be carried out within all of an item's text fields."
 msgstr "Wählen Sie dies aus, wenn Sie Zahlen oder Bereiche in allen Textfeldern eines Objektes suchen wollen."
 
-#: config_form.php:31
+#: config_form.php:89
 msgid "Limit Scan to Fields"
 msgstr "Suche auf Felder beschränken"
 
-#: config_form.php:36
+#: config_form.php:94
 msgid "Please select the elements i.e. fields that the scan for names / ranges should be limited to.<br><em>Please note:</em> To select multiple entries, try holding the Ctrl key (Windows) or the Cmd key (Mac) while clicking."
 msgstr "Bitte wählen Sie die Elemente bzw. Felder, auf die die Suche nach Nummern beschränkt sein soll.<br><em>Bitte beachten Sie:</em> Um mehrere Einträge auszuwählen, halten Sie bitte während des Klickens die Strg-Taste (Windows) bzw. die Command-Taste (Mac) gedrückt."
 
-#: config_form.php:45
+#: config_form.php:103
 msgid "Scan Inside Relationship Comments"
 msgstr "Innerhalb von Objekt-Beziehungs-Kommentaren suchen"
 
-#: config_form.php:50
+#: config_form.php:108
 msgid "The Item Relationships add-on is installed, and it has been patched to feature relationship comments. Check this if you want Range Search to scan inside relationship comments."
 msgstr "Das Objekt-Beziehungen (Item Relationships) Add-on ist installiert, und es ist gepatcht, um Beziehungs-Kommentare zu unterstützen. Wählen Sie dies aus, wenn die Suche innerhalb der Beziehungskommentare erfolgen soll."
 
-#: config_form.php:87
+#: config_form.php:151
 msgid "Trigger Re-indexing of Existing Content"
 msgstr "Re-Indexierung von bestehendem Inhalt auslösen"
 
-#: config_form.php:92
+#: config_form.php:156
 msgid "<strong>Please note:</strong> Checking this box will re-generate the index <em>now</em> and exactly <em>once</em>. This action will be carried out as soon as you click on \"Save Changes\"."
 msgstr "<strong>Bitte beachten:</strong> Wenn Sie diese Option auswählen, wird der Index <em>jetzt</em> und genau <em>einmal</em>neu generiert. Diese Aktion wird durchgeführt, sobald Sie auf „Änderungen speichern“ klicken."
 
-#: config_form.php:99
+#: config_form.php:163
 msgid "<em>Explanation:</em> Range Search relies on a search index that is being created during content maintenance in the background. However, existing content will not be re-indexed automatically. So if you have existing content or modify your settings, you should re-generate the search index."
 msgstr "<em>Erläuterung:</em> Die Bereichs-Suche stützt sich auf einen Suchindex, der während der Inhaltspflege im Hintergrund erstellt wird. Jedoch werden vorhandene Inhalte nicht automatisch erneut indexiert. Sofern Ihre Datenbank also über bestehende Inhalte verfügt, oder wenn Sie Ihre Einstellungen ändern, sollten Sie den Suchindex neu generieren."
 
-#: config_form.php:108
+#: config_form.php:172
 msgid "Debug Output"
 msgstr "Debug-Ausgabe"
 

@@ -6,6 +6,9 @@ jQuery(document).bind("omeka:elementformload", function() {
   var textFields = ["#rangeSearch1", "#rangeSearch2", "#rangeSearch3",
                     "#rangeSearch4", "#rangeSearch5", "#rangeSearch6"];
 
+  var curUnits = new Array();
+  var autoConversions = new Object();
+
   // --------------------------------------------------------
 
   $("#rangeSearchWrapper").remove();
@@ -62,6 +65,9 @@ jQuery(document).bind("omeka:elementformload", function() {
 
   // -------------------
 
+  /**
+	* Open data entry / manipulation popup
+	*/
   $(".rangeSearchButtons button").click(function(e) {
     e.preventDefault();
 
@@ -77,10 +83,17 @@ jQuery(document).bind("omeka:elementformload", function() {
 
   // --------------------------------------------------------
 
+  /**
+	* React on selecting a Triple Unit from the dropdown select
+	*/
   $("#rangeSearchUnits").change(function(e) {
-    var curSelect = $("#rangeSearchUnits").val();
+    curUnits = $('#rangeSearchUnits option:selected').text();
+    curUnits = curUnits.split("-");
 
-    var conversions = new Array;
+    var curSelect = parseInt($("#rangeSearchUnits").val());
+
+    var conversions = new Array();
+    autoConversions = new Object();
 
     if (typeof rangeSearchConversions[curSelect] != 'undefined') {
       conversions = rangeSearchConversions[curSelect];
@@ -95,12 +108,114 @@ jQuery(document).bind("omeka:elementformload", function() {
       $("#rangeSearchConversions").slideDown("fast");
       for(var idx=0 ; (idx<=2) ; idx++) { $("#rangeSearchConversion"+idx).val(conversions[idx]); }
       $("#rangeSearchConversion0").prop("readonly", true);
+      checkAutoConversions(curSelect);
     }
-
+    prepareAutoConversionsSelect();
   });
 
   // --------------------------------------------------------
 
+  /**
+	* After selecting a Triple Unit, check for compatible = autoconvertable other Triple Units
+	*/
+  function checkAutoConversions(curSelect) {
+    var curGroupId = rangeSearchGroups[1][curSelect];
+    var curGroup = rangeSearchGroups[0][curGroupId];
+
+    for(var i=0 ; i<curGroup.length; i++) {
+      var potAutoConv = curGroup[i];
+      if (curSelect != potAutoConv) {
+        var potAutoConvRates = rangeSearchConversions[potAutoConv];
+        if (potAutoConvRates.length==3) {
+          var potNewUnits = $('#rangeSearchUnits option[value="'+potAutoConv+'"]').text();
+          potNewUnits = potNewUnits.split("-");
+          for(var a=0; a<3; a++) {
+            for (var b=0; b<3; b++) {
+              if (curUnits[a] == potNewUnits[b]) {
+                // console.log(curUnits[a] + " - " + curSelect+"/"+a + " = " + potAutoConv+"/"+b );
+                if ( !(curUnits[a] in autoConversions) ) { autoConversions[curUnits[a]] = new Array(); }
+                autoConversions[curUnits[a]].push( new Array(curSelect, a, potAutoConv, b) );
+                if ( !autoConversions.hasOwnProperty('convUnits') ) { autoConversions.convUnits = new Array();}
+                autoConversions.convUnits.push(curUnits[a]);
+              }
+            }
+          }
+          // console.log(autoConversions);
+        }
+      }
+    }
+  }
+
+  // --------------------------------------------------------
+
+  /**
+	* Hide/show and (if applicable) populate the auto conversion select box
+	*/
+  function prepareAutoConversionsSelect() {
+    $("#rangeSergeAutoConv").empty().unbind("change");
+    if (!autoConversions.hasOwnProperty('convUnits')) {
+      $("#rangeSergeAutoConvDiv").slideUp();
+    }
+    else {
+      $("#rangeSergeAutoConvDiv").slideDown();
+      var selectBelow = $('#rangeSearchUnits option[value="-1"]').text();
+      $("#rangeSergeAutoConv").append("<option value='-1' selected>"+selectBelow+"</option>")
+      for(var unit=0; unit<autoConversions.convUnits.length; unit++) {
+        var curGroup = autoConversions.convUnits[unit];
+        var optGroup = "";
+        optGroup += "<optgroup label='"+curGroup+"'>";
+        var curGroupPoss = autoConversions[curGroup];
+        for(var variant=0; variant<curGroupPoss.length; variant++) {
+          var curVariant = curGroupPoss[variant];
+          var targetTriple = curVariant[2];
+          var targetTripelName = $('#rangeSearchUnits option[value="'+targetTriple+'"]').text();
+          var curValue = curVariant.join("-");
+          optGroup += "<option value='" + curValue + "'>"+targetTripelName+"</option>";
+        }
+        optGroup += "</optgroup>";
+        $("#rangeSergeAutoConv").append(optGroup);
+      }
+
+      $("#rangeSergeAutoConv").change(function(e){
+        var curAutoConf = $("#rangeSergeAutoConv").val();
+        curAutoConf = curAutoConf.split("-");
+
+        var nums = new Array;
+        for(var idx=1; (idx<=6); idx++) {
+          var num = parseInt( $("#rangeSearch"+idx).val() );
+          nums[idx] = ( isNaN(num) ? 0 : num );
+        }
+
+        var fromConv = rangeSearchConversions[curAutoConf[0]];
+        var fromBtn = parseInt(curAutoConf[1])+1;
+        var toConv = rangeSearchConversions[curAutoConf[2]];
+        var toBtn = parseInt(curAutoConf[3])+1;
+
+        var nrm = normalizeValues(new Array(nums[1], nums[2], nums[3]), fromConv, fromBtn);
+        var deNrm = deNormalizeValue(nrm, toConv, toBtn);
+        for(var i=0; i<=2; i++) { nums[1+i] = deNrm[i] };
+
+        var nrm = normalizeValues(new Array(nums[4], nums[5], nums[6]), fromConv, fromBtn);
+        var deNrm = deNormalizeValue(nrm, toConv, toBtn);
+        for(var i=0; i<=2; i++) { nums[4+i] = deNrm[i] };
+
+        for(var idx=1; (idx<=6); idx++) {
+          $("#rangeSearch"+idx).val( nums[idx] );
+        }
+
+        $("#rangeSearchUnits option[value='"+curAutoConf[2]+"']")
+        .attr('selected',true).change();
+
+      });
+
+    }
+  }
+
+  // --------------------------------------------------------
+
+  /**
+	* React on clicking on one of the three "Convert" buttons
+	*/
   $(".rangerSearchConvert").click(function(e) {
     e.preventDefault();
     var btnId = e.target.id;
@@ -118,27 +233,13 @@ jQuery(document).bind("omeka:elementformload", function() {
         conversions[idx] = ( conversions[idx]<2 ? 1 : conversions[idx] );
         $("#rangeSearchConversion"+idx).val( conversions[idx] );
       }
-      // First normalize to lowest -- as if btnNum == 3
-      nums[3] = nums[3]
-              + nums[2] * conversions[2]
-              + nums[1] * conversions[1] * conversions[2];
-      nums[2] = nums[1] = 0;
-      nums[6] = nums[6]
-              + nums[5] * conversions[2]
-              + nums[4] * conversions[1] * conversions[2];
-      nums[5] = nums[4] = 0;
-      if ( (btnNum == 2) || (btnNum == 1) ) { // Normalize to second
-        nums[2] = Math.floor(nums[3] / conversions[2]);
-        nums[3] = nums[3] % conversions[2];
-        nums[5] = Math.floor(nums[6] / conversions[2]);
-        nums[6] = nums[6] % conversions[2];
-      }
-      if (btnNum == 1) { // Normalize to first
-        nums[1] = Math.floor(nums[2] / conversions[1]);
-        nums[2] = nums[2] % conversions[1];
-        nums[4] = Math.floor(nums[5] / conversions[1]);
-        nums[5] = nums[5] % conversions[1];
-      }
+
+      var convertedNums = convertValues(new Array(nums[1], nums[2], nums[3]), conversions, btnNum);
+      for(var i=0; i<=2; i++) { nums[1+i] = convertedNums[i] };
+
+      var convertedNums = convertValues(new Array(nums[4], nums[5], nums[6]), conversions, btnNum);
+      for(var i=0; i<=2; i++) { nums[4+i] = convertedNums[i] };
+
       for(var idx=1; (idx<=6); idx++) {
         $("#rangeSearch"+idx).val( nums[idx] );
       }
@@ -147,6 +248,70 @@ jQuery(document).bind("omeka:elementformload", function() {
 
   // --------------------------------------------------------
 
+  /**
+	* Spread a number triple based on the triple conversion rates into
+  * one of the three components, including modulo calculation for the rest
+	*/
+  function convertValues(nums, conversions, btnNum) {
+    nums.unshift(null);
+    // First normalize to lowest -- as if btnNum == 3
+    nums[3] = nums[3]
+            + nums[2] * conversions[2]
+            + nums[1] * conversions[1] * conversions[2];
+    nums[2] = nums[1] = 0;
+    if ( (btnNum == 2) || (btnNum == 1) ) { // Normalize to second
+      nums[2] = Math.floor(nums[3] / conversions[2]);
+      nums[3] = nums[3] % conversions[2];
+    }
+    if (btnNum == 1) { // Normalize to first
+      nums[1] = Math.floor(nums[2] / conversions[1]);
+      nums[2] = nums[2] % conversions[1];
+    }
+    for(var i=1; i<=3; i++) { nums[i] = Math.round(nums[i]); }
+    nums.shift();
+    return nums;
+  }
+
+  // --------------------------------------------------------
+
+  /**
+	* Push a number triple based on the triple conversion rates
+  * into just one float -- probably with fractional digits
+	*/
+  function normalizeValues(nums, conversions, btnNum) {
+    // console.log(nums);
+    var result=null;
+    nums.unshift(null);
+    if (btnNum == 1) {
+      result = nums[1]
+                + nums[2] / conversions[1]
+                + nums[3] / (conversions[1] * conversions[2]);
+    }
+    else if (btnNum == 2) {
+      result = nums[1] * conversions[1]
+                + nums[2]
+                + nums[3] / conversions[2];
+    }
+    else if (btnNum == 3) {
+      result = nums[1] * (conversions[1] * conversions[2])
+                + nums[2] * conversions[2]
+                + nums[3];
+    }
+    return result;
+  }
+
+  // --------------------------------------------------------
+
+  function deNormalizeValue(nrm, conversions, btnNum) {
+    var nums = [ 0, 0, 0, 0 ];
+    nums[btnNum] = nrm;
+    nums.shift();
+    return convertValues(nums, conversions, 1);
+}
+
+  // --------------------------------------------------------
+
+  // Prevent default link reaction for all popup buttons
   $("#range-search-popup button").click(function(e) { e.preventDefault(); });
 
   // --------------------------------------------------------
@@ -175,6 +340,9 @@ jQuery(document).bind("omeka:elementformload", function() {
 
   // -------------------
 
+  /**
+	* Close tool popup and transfer data back into edit field
+	*/
   $("#rangeSearchApply").click(function () {
     if (!currentTextArea) { alert(rangeSearchSelectFirst); return; }
 
@@ -190,19 +358,16 @@ jQuery(document).bind("omeka:elementformload", function() {
       if (!checkTextfields(textFields.slice(3))) { return; }
     }
 
-    var units = $('#rangeSearchUnits option:selected').text();
-    units = units.split("-");
-
     var result="";
-    result += $("#rangeSearch1").val() + units[0] + "-" +
-              $("#rangeSearch2").val() + units[1] + "-" +
-              $("#rangeSearch3").val() + units[2];
+    result += $("#rangeSearch1").val() + curUnits[0] + "-" +
+              $("#rangeSearch2").val() + curUnits[1] + "-" +
+              $("#rangeSearch3").val() + curUnits[2];
 
     if (range) {
       result += " - " +
-                $("#rangeSearch4").val() + units[0] + "-" +
-                $("#rangeSearch5").val() + units[1] + "-" +
-                $("#rangeSearch6").val() + units[2];
+                $("#rangeSearch4").val() + curUnits[0] + "-" +
+                $("#rangeSearch5").val() + curUnits[1] + "-" +
+                $("#rangeSearch6").val() + curUnits[2];
     }
 
     currentTextArea.replaceSelectedText(result);

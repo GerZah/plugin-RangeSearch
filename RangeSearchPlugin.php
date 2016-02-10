@@ -185,6 +185,66 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 		return json_decode($json);
 	}
 
+	private function _fetchUnitDetails() {
+		$units = SELF::_fetchUnitArray();
+    $saniUnits = array(); # All arrays ...
+    $saniConversions = array(); # ... starting with ...
+    $saniGroups = array(); #  ... index 0
+    $existingGroups = array();
+		$saniUnitCount = 0;
+    foreach($units as $unit) {
+      // [Group] A-B-C
+      $group = __("[n/a]"); // "";
+      $bracketBlank = strpos($unit, "] ");
+      if ($bracketBlank) {
+        $group = substr($unit, 0, $bracketBlank);
+        $group = substr($group, strpos($group, "[")+1);
+        $unit = substr($unit, $bracketBlank+2);
+      }
+      // A-B-C (1-2-3)
+      $conversionDecimals = array();
+      $blankBracket = strpos($unit, " (");
+      if ($blankBracket) {
+        $conversion = substr($unit, $blankBracket+2);
+        $conversion = substr($conversion, 0, strpos($conversion, ")") );
+        preg_match_all("(\d+)", $conversion, $conversionDecimals);
+        if ($conversionDecimals) {
+          $conversionDecimals = $conversionDecimals[0];
+          foreach(array_keys($conversionDecimals) as $idx) {
+            $conversionDecimals[$idx] = ( $conversionDecimals[$idx]<1 ? 1 : $conversionDecimals[$idx] );
+          }
+          if ($conversionDecimals[0] != 1) { $conversionDecimals[0] = 1; }
+        }
+        # echo "<pre>#$conversion#</pre>"; #die();
+        # echo "<pre>" . print_r($conversionDecimals,true) . "</pre>"; # die();
+        $unit = substr($unit, 0, $blankBracket);
+      }
+      if ( substr_count($unit, "-") == 2 ) {
+        $saniUnits[$saniUnitCount] = $unit;
+        $saniConversions[$saniUnitCount] = $conversionDecimals;
+        $saniGroups[$saniUnitCount] = $group;
+				if (!@is_array($existingGroups[$group])) { $existingGroups[$group] = array(); }
+				$existingGroups[$group][]=$saniUnitCount;
+				$saniUnitCount++;
+      }
+    }
+		ksort($existingGroups);
+		$unitSelect = array( -1 => __("Select Below") );
+		foreach($existingGroups as $groupName => $unitIds) {
+			$unitSelect[$groupName] = array();
+			foreach($unitIds as $unitId) {
+				$unitSelect[$groupName][$unitId] = $saniUnits[$unitId];
+			}
+		}
+		return array(
+			"saniUnits" => $saniUnits,
+			"saniConversions" => $saniConversions,
+			"saniGroups" => $saniGroups,
+			"existingGroups" => $existingGroups,
+			"unitSelect" => $unitSelect,
+		);
+	}
+
 	/**
 	 * Transform unit array to be edited in textarea on config page
 	 */
@@ -202,6 +262,8 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 		$arr = SELF::_fetchUnitArray();
 		if ($arr) {
 			foreach($arr as $unit) {
+				$bracketBlank = strpos($unit, "] ");
+				if ($bracketBlank) { $unit = substr($unit, $bracketBlank+2); }
 				$blankBracket = strpos($unit, " (");
 				if ($blankBracket) { $unit = substr($unit, 0, $blankBracket); }
 				if ( substr_count($unit, "-") == 2 ) { // e.g. "RT-Gr-d"
@@ -395,12 +457,10 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 	 * Display the time search form on the admin advanced search page
 	 */
 	protected function _itemsSearch() {
-		$validUnits = SELF::_decodeUnitsForRegEx();
-		if ($validUnits) {
-			$selectUnits = /* array(-1 => "-- ".__("All")." --" ) + */ array_keys($validUnits);
-			# echo "<pre>" . print_r(array_keys($selectUnits),true) . "</pre>";
-			echo common('range-search-advanced-search', array("selectUnits" => $selectUnits ));
-		}
+		$unitsDetails = SELF::_fetchUnitDetails();
+		$unitSelect = $unitsDetails["unitSelect"];
+		unset($unitSelect[-1]); // remove "Select below"
+		echo common('range-search-advanced-search', array("selectUnits" => $unitSelect ));
 	}
 
 	/**
