@@ -433,7 +433,7 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 			if ($text !== false) {
 
 				$cookedRanges = SELF::_processRangeText($text);
-				# echo "<pre>"; print_r($cookedRanges); die("</pre>");
+				// echo "<pre>" . print_r($cookedDates,true) . "</pre>"; die();
 
 				if ($cookedRanges) {
 
@@ -587,10 +587,11 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 		foreach($regEx as $key => $val) { $$key = $val; }
 
 		$allCount = preg_match_all( "($combinedRegEx)i", $text, $allMatches);
-		# echo "<pre>Count: $allCount\n" . print_r($allMatches,true) . "</pre>";
+		// echo "<p>$text</p>";
+		// echo "<pre>Count: $allCount\n" . print_r($allMatches,true) . "</pre>"; // die();
 
 		$cookedRanges = array();
-		foreach($allMatches[0] as $singleMatch) {
+		foreach(array_unique($allMatches[0]) as $singleMatch) {
 
 			$usedRegExId = false;
 			foreach($singleRegEx as $id => $testString) {
@@ -614,8 +615,7 @@ class RangeSearchPlugin extends Omeka_Plugin_AbstractPlugin {
 				$cookedRanges[] = $numberRange;
 			}
 		}
-		# echo "<pre>" . print_r($cookedRanges,true) . "</pre>"; die();
-		# die();
+		// echo "<pre>" . print_r($cookedDates,true) . "</pre>"; die();
 
 		return $cookedRanges;
 	}
